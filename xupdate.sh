@@ -4,8 +4,10 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export XDIR=$SCRIPT_DIR
 export XADDONSDIR=$XDIR/package/addons
 FEEDSDIR=$XDIR/package/feeds
-ADDONSCFG=$XDIR/_addons.config
-ADDONSNSS=$XDIR/_addons_nss.config
+BASECFG=$XDIR/base-configs
+ADDONFEEDS=$BASECFG/_addon_feeds.config
+ADDONPACKAGES=$BASECFG/_addon_packages.config
+ADDONNSS=$BASECFG/_addon_nss.config
 
 . ./xcommon.sh
 
@@ -54,18 +56,18 @@ if [ "$USE_GITHUB_SRC" = "true" ]; then
 	sed -i -e 's|https://git.openwrt.org/project/|https://github.com/openwrt/|' feeds.conf
 fi
 
-feed_lst=$( get_cfg_feed_lst "$ADDONSCFG" )
+feed_lst=$( get_cfg_feed_lst "$ADDONFEEDS" )
 for feed in $feed_lst; do
-	value=$( get_cfg_feed_url "$ADDONSCFG" $feed )
-	#echo "$feed = '$value'"
+	value=$( get_cfg_feed_url "$ADDONFEEDS" $feed )
+	echo "$feed = '$value'"
 	echo "src-git $feed $value" >> feeds.conf
 done
 
 if is_nss_repo "$XDIR"; then
-	feed_lst=$( get_cfg_feed_lst "$ADDONSNSS" )
+	feed_lst=$( get_cfg_feed_lst "$ADDONNSS" )
 	for feed in $feed_lst; do
-		value=$( get_cfg_feed_url "$ADDONSNSS" $feed )
-		#echo "$feed = '$value'"
+		value=$( get_cfg_feed_url "$ADDONNSS" $feed )
+		echo "$feed = '$value'"
 		echo "src-git $feed $value" >> feeds.conf
 	done
 fi
@@ -133,13 +135,13 @@ fi
 CLONE_ADDONS=true
 if [ "$CLONE_ADDONS" = "true" ]; then
 	mkdir -p $XADDONSDIR
-	pkg_lst=$( get_cfg_expkg_lst "$ADDONSCFG" )
+	pkg_lst=$( get_cfg_expkg_lst "$ADDONPACKAGES" )
 	for pkg in $pkg_lst; do
-		value=$( get_cfg_expkg_url "$ADDONSCFG" $pkg )
-		#echo "$pkg = '$value'"
+		value=$( get_cfg_expkg_url "$ADDONPACKAGES" $pkg )
+		echo "$pkg = '$value'"
 		url=$( echo "$value" | cut -d " " -f 1 )
 		branch=$( echo "$value" | cut -d " " -f 2 )
-		#echo "'$url' / '$branch'"
+		echo "'$url' / '$branch'"
 		if [ ! -d "$XADDONSDIR/$pkg" ]; then
 			git clone $url -b $branch $XADDONSDIR/$pkg
 			[ "$?" != "0" ] && die "Can't clone repository '$url'"

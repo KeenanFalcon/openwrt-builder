@@ -36,7 +36,6 @@ is_nss_repo() {
 	return $(true)
 }
 
-
 get_cfg_inc_lst() {
 	local cfg=$1
 	local k=$( grep -o -P '(?<=^#include ).*' "$cfg" 2> /dev/null )

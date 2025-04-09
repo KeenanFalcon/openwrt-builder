@@ -2,6 +2,8 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export XDIR="$SCRIPT_DIR"
+BASECFG=$XDIR/base-configs
+DEVICECFG=$XDIR/device-configs
 
 . ./xcommon.sh
 
@@ -66,11 +68,13 @@ function build_target {
 	rm -f $CFG
 	cp -f $target_cfg $CFG
 	if is_nss_repo $XDIR; then
-		sed -i "/#include _base/a #include _addons_nss.config" $CFG
+		sed -i "/#include _base/a #include _addon_nss.config" $CFG
 	fi
 	inclst=$( get_cfg_inc_lst $CFG )
+	#echo $inclst
 	for inc in $inclst; do
-		incfn=$XDIR/$inc
+		incfn=$BASECFG/$inc
+		echo $incfn
 		[ ! -f $incfn ] && die "File '$inc' not found!"
 		sed -i "/#include $inc/a <<LF>><<LF>>" $CFG
 		sed -i "s/<<LF>>/\n/g" $CFG
@@ -302,7 +306,7 @@ function build_config {
 
 
 if [ "$XTARGET" != "*" ]; then
-	TARGETCFG=$XDIR/$XTARGET
+	TARGETCFG=$DEVICECFG/$XTARGET
 	XTARGET_EXT="${XTARGET##*.}"
 	[ $XTARGET_EXT != config ] && TARGETCFG=$TARGETCFG.config
 	[ ! -f $TARGETCFG ] && die "File '"`basename $TARGETCFG`"' not found!"
@@ -314,7 +318,7 @@ if [ "$XTARGET" != "*" ]; then
 fi
 
 XOUT=$XDIR/xout
-CFG_LIST=$( find $XDIR/* -maxdepth 1 -name '[a-z0-9]*.config' )
+CFG_LIST=$( find $DEVICECFG/* -maxdepth 1 -name '[a-z0-9]*.config' )
 
 rm -rf $XOUT
 
